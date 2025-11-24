@@ -19,7 +19,6 @@ Camera::Camera(glm::vec3 position, glm::vec3 up)
 // Implementação da Visão
 glm::mat4 Camera::GetViewMatrix() // Retorna a matriz View (olhar através da câmera)
 {
-	// LookAt: método que cria uma matriz de visualização.
 	return glm::lookAt(this->Position, this->Position + this->Front, this->Up); // glm::lookAt(eye, center, up)
     
 }
@@ -34,26 +33,27 @@ void Camera::ProcessKeyboard(char direction, float deltaTime)
     if (direction == 'S')
         this->Position -= this->Front * velocity;
 
-    if (direction == 'L' || direction == 'R') // Yaw
-         
+    if (direction == 'L' || direction == 'R')
+
     {
 
         float rotationSpeed = 120.0f * deltaTime;
         float rotationAngle = rotationSpeed;
 
+        // 2. Verificamos se o comando é 'L' (Esquerda)
         if (direction == 'R') {
-           
-            rotationAngle = -rotationSpeed; // Invertido para R
+            // Se for, simplesmente invertemos o ângulo para negativo
+            rotationAngle = -rotationSpeed;
         }
 
-		// Rotaciona o vetor Front em torno do eixo WorldUp
+        // 3. Criamos uma matriz de rotação temporária
         glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), glm::radians(rotationAngle), this->WorldUp);
 
-		// Aplica a rotação ao vetor Front
+        // 4. Aplicamos a rotação ao nosso vetor 'Front'
         this->Front = glm::vec3(rotation * glm::vec4(this->Front, 0.0f));
 
-		// Recalcula os vetores Right e Up
-		this->Right = glm::normalize(glm::cross(this->Front, this->WorldUp));
+        // 5. Recalculamos os outros vetores para se alinharem com o novo 'Front'
+        this->Right = glm::normalize(glm::cross(this->Front, this->WorldUp));
         this->Up = glm::normalize(glm::cross(this->Right, this->Front));
     }
 }

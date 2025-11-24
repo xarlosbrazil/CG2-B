@@ -26,11 +26,10 @@ Mesh::Mesh(const std::vector<float>& vertices) // -- stantard library - vector  
 
     }
 
-	// Setup OpenGL buffers and arrays
     glGenVertexArrays(1, &this->VAO);
     glGenBuffers(1, &this->VBO);
 
-	glBindVertexArray(this->VAO); // Ativa o VAO como array de vértices corrente
+    glBindVertexArray(this->VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, this->VBO); // Ativa o VBO como buffer de vértices corrente
 	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW); // Copia os dados para a GPU
 
@@ -40,7 +39,7 @@ Mesh::Mesh(const std::vector<float>& vertices) // -- stantard library - vector  
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-	glBindVertexArray(0); // Desativa o VAO
+    glBindVertexArray(0);
 }
 
 Mesh::~Mesh()
@@ -52,7 +51,7 @@ Mesh::~Mesh()
 
 void Mesh::draw()
 {
-	// Desenha o mesh
+    // Simplesmente ativa o VAO e manda desenhar
     glBindVertexArray(this->VAO);
     glDrawArrays(GL_TRIANGLES, 0, this->vertexCount);
     glBindVertexArray(0);

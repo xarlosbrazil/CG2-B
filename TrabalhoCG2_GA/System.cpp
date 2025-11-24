@@ -6,7 +6,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-Camera camera(glm::vec3(0.0f, 0.0f, 10.0f));
+Camera camera(glm::vec3(0.0f, 0.0f, 10.0f)); // Start the camera at (0,0,10) looking towards the origin
 
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
@@ -68,6 +68,8 @@ int System::OpenGLSetup()
 	glEnable(GL_DEPTH_TEST);
 	std::vector<float> teapotVertices;
 
+
+
 	//glEnable(GL_CULL_FACE);
 	//glCullFace(GL_BACK);
 	//glFrontFace(GL_CW);
@@ -83,8 +85,8 @@ int System::SystemSetup()
 
 	setupBullet();
 
-	std::vector<float> teapotVertices; // Criamos um vetor para guardar os vértices do teapot
-	if (loadObj("teapot.obj", teapotVertices) && !teapotVertices.empty()) // Usa o vetor como argumento para a função de carregar o OBJ
+	std::vector<float> teapotVertices;
+	if (loadObj("teapot.obj", teapotVertices) && !teapotVertices.empty())
 	{
 	
 		Mesh* teapotMesh = new Mesh(teapotVertices); // Mesh a ser reutilizado
@@ -162,7 +164,8 @@ void processInput(GLFWwindow* window, float deltaTime)
 
 bool checkCollision(const AABB& box, const glm::vec3& point)
 {
-
+	// O ponto está colidindo se, E SOMENTE SE, sua posição
+	// estiver entre os limites min e max da caixa em TODOS os três eixos (X, Y e Z).
 	return (point.x >= box.min.x && point.x <= box.max.x
 		&& point.y >= box.min.y && point.y <= box.max.y
 		&& point.z >= box.min.z && point.z <= box.max.z);
@@ -195,9 +198,8 @@ void System::Run()
 
 		// Onde o objeto está no mundo? (Matriz Model)
 		glm::mat4 view = camera.GetViewMatrix(); // De onde estamos olhando para o mundo?
-		glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)WIDTH / HEIGHT, 0.1f, 100.0f); // Qual a perspectiva da nossa "lente"?
+		glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)WIDTH / HEIGHT, 0.1f, 100.0f); // Como se fosse a "lente" da câmera
 
-		// Passa as matrizes para o shader
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
@@ -206,14 +208,16 @@ void System::Run()
 			if (object.active)
 
 			{
-				// object.transform = glm::rotate(object.transform, glm::radians(2.0f) * deltaTime * 50.f, glm::vec3(0.2f, 1.0f, 0.0f));
+				// Animação opcional: rotacionar os objetos
+				object.transform = glm::rotate(object.transform, glm::radians(2.0f) * deltaTime * 50.f, glm::vec3(0.2f, 1.0f, 0.0f));
 
+				// Manda cada objeto se desenhar
 				object.draw(coreShader);
 			}
 		}
 
 
-		glBindVertexArray(bulletVAO); // Ativa o VAO da bala
+		glBindVertexArray(bulletVAO); // Ativa o "molde" de desenho da bala
 
 		for (auto& bullet : bullets)
 		{
@@ -264,6 +268,7 @@ void System::Run()
 				glm::mat4 bulletModel = glm::mat4(1.0f);
 				bulletModel = glm::translate(bulletModel, bullet.position);
 
+				// Envia esta matriz para o shader (reutilizando a modelLoc)
 				glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(bulletModel));
 
 				// Desenha o cubo da bala

@@ -65,5 +65,5 @@ bool loadObj(const char* path, std::vector<float>& out_vertices)
         }
     }
 
-    return true;
+    return true; // Optionally return true if loading was successful
 }

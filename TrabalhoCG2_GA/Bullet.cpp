@@ -23,9 +23,9 @@ void Bullet::update(float deltaTime)
     if (this->lifeTime <= 0.0f)
     {
         this->active = false;
-        return; // Bala expirou
+        return; // A bala "morreu", não precisa mais se mover.
     }
 
     // Atualiza a posição
-	this->position += this->direction * this->speed * deltaTime; // DeltaTime para movimento independente da taxa de quadros
+    this->position += this->direction * this->speed * deltaTime;
 }
