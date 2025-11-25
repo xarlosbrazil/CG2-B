@@ -51,27 +51,34 @@ bool loadObj(const char* path, std::vector<float>& out_vertices)
 		else if (prefix == "f") // If the line starts with "f", it's a face
         {
 			// OBJ format for faces can be like "f 1/1/1 2/2/2 3/3/3"
-            unsigned int posIndex, texIndex, normIndex;
+            unsigned int posIndex, texIndex, normalIndex;
             char slash;
 
             for (int i = 0; i < 3; ++i) {
 
-                ss >> posIndex >> slash >> texIndex >> slash >> normIndex;
+                ss >> posIndex >> slash >> texIndex >> slash >> normalIndex;
 
                 glm::vec3 position = temp_positions[posIndex - 1];
-                glm::vec2 texCoord = temp_texCoords[texIndex - 1];
-				glm::vec3 normal = temp_normals[normIndex - 1];
+                out_vertices.push_back(position.x);
+                out_vertices.push_back(position.y);
+                out_vertices.push_back(position.z);
 
-				out_vertices.push_back(position.x);
-				out_vertices.push_back(position.y);
-				out_vertices.push_back(position.z);
-				out_vertices.push_back(texCoord.x);
-				out_vertices.push_back(texCoord.y);
-				out_vertices.push_back(normal.x);
-				out_vertices.push_back(normal.y);
-				out_vertices.push_back(normal.z);
+                if (!temp_texCoords.empty() && texIndex > 0) {
 
+                    glm::vec2 texCoord = temp_texCoords[texIndex - 1];
+                    out_vertices.push_back(texCoord.x);
+                    out_vertices.push_back(texCoord.y);
 
+                }
+
+                if (!temp_normals.empty() && normalIndex > 0) {
+
+                    glm::vec3 normal = temp_normals[normalIndex - 1];
+                    out_vertices.push_back(normal.x);
+                    out_vertices.push_back(normal.y);
+                    out_vertices.push_back(normal.z);
+
+                }
             }
         }
     }

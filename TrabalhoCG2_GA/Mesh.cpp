@@ -28,7 +28,6 @@ Mesh::Mesh(const std::vector<float>& vertices) // -- stantard library - vector  
 
     glGenVertexArrays(1, &this->VAO);
     glGenBuffers(1, &this->VBO);
-
     glBindVertexArray(this->VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, this->VBO); // Ativa o VBO como buffer de vértices corrente
 	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW); // Copia os dados para a GPU
