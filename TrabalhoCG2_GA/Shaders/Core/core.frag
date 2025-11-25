@@ -42,7 +42,9 @@ void main()
         
     // --- RESULTADO FINAL ---
     // Soma as três luzes e multiplica pela cor da textura (ou do objeto)
-    vec3 result = (ambient + diffuse + specular) * vec3(texture(texture1, TexCoord));
+    vec3 texColor = vec3(texture(texture1, TexCoord));
+    if (texColor == vec3(0.0)) texColor = objectColor; // crude check; better: have a uniform flag 'useTexture'
+    vec3 result = (ambient + diffuse + specular) * texColor;
     
     FragColor = vec4(result, 1.0);
 }

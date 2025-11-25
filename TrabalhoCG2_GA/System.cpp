@@ -2,6 +2,7 @@
 #include "loadObj.h"
 #include "Camera.h"
 #include "Bullet.h"
+#include "Mesh.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -82,6 +83,9 @@ int System::SystemSetup()
 
 	coreShader = Shader("Shaders/Core/core.vert", "Shaders/Core/core.frag");
 	coreShader.Use();
+
+	coreShader.LoadTexture((char*)"Textures/wood.jpg", (char*)"texture1", "woodTexture");
+	coreShader.UseTexture("woodTexture");
 
 	setupBullet();
 
