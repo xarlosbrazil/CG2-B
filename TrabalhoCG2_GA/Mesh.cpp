@@ -3,12 +3,12 @@
 Mesh::Mesh(const std::vector<float>& vertices) // -- stantard library - vector  -- tipo de variável : vetor dinâmico de floats
 {
 
-    this->vertexCount = vertices.size() / 5; // { X, Y, Z, U, V,  X, Y, Z, U, V,  X, Y, Z, U, V, ... }
+	this->vertexCount = vertices.size() / 8; // Cada vértice tem 8 floats (X, Y, Z, U, V, NX, NY, NZ)
 
     minBounds = glm::vec3(std::numeric_limits<float>::max());
     maxBounds = glm::vec3(std::numeric_limits<float>::lowest());
 
-	for (size_t i = 0; i < vertices.size(); i += 5) // Percorre apenas os vértices (X, Y, Z), ignorando UVs
+	for (size_t i = 0; i < vertices.size(); i += 8) // Percorre apenas os vértices (X, Y, Z), ignorando UVs
     {
 		float x = vertices[i]; // Primeiro vértice do triângulo
 		float y = vertices[i + 1]; // Segundo vértice do triângulo
