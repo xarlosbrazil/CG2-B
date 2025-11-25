@@ -33,11 +33,14 @@ Mesh::Mesh(const std::vector<float>& vertices) // -- stantard library - vector  
 	glBindBuffer(GL_ARRAY_BUFFER, this->VBO); // Ativa o VBO como buffer de vértices corrente
 	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW); // Copia os dados para a GPU
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0); // Argumentos: índice do atributo, tamanho (3 para XYZ), tipo, normalizado?, stride (espaçamento entre atributos), offset (posição inicial do atributo no array)
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0); // Argumentos: índice do atributo, tamanho (3 para XYZ), tipo, normalizado?, stride (espaçamento entre atributos), offset (posição inicial do atributo no array)
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
+    glEnableVertexAttribArray(2);
 
     glBindVertexArray(0);
 }

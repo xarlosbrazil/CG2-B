@@ -10,6 +10,7 @@ bool loadObj(const char* path, std::vector<float>& out_vertices)
 {
     std::vector<glm::vec3> temp_positions; // Temporarily store positions for vectors
 	std::vector<glm::vec2> temp_texCoords; // Temporarily store texture coordinates for vectors
+	std::vector<glm::vec3> temp_normals; // Temporarily store normals for vectors
 
 
 	std::ifstream file(path); // Open the file and store in 'file'
@@ -41,6 +42,12 @@ bool loadObj(const char* path, std::vector<float>& out_vertices)
             temp_texCoords.push_back(texCoord);
         }
 
+        else if (prefix == "vn") { // Leitura das Normais
+            glm::vec3 normal;
+            ss >> normal.x >> normal.y >> normal.z;
+            temp_normals.push_back(normal);
+
+        }
 		else if (prefix == "f") // If the line starts with "f", it's a face
         {
 			// OBJ format for faces can be like "f 1/1/1 2/2/2 3/3/3"
@@ -53,12 +60,16 @@ bool loadObj(const char* path, std::vector<float>& out_vertices)
 
                 glm::vec3 position = temp_positions[posIndex - 1];
                 glm::vec2 texCoord = temp_texCoords[texIndex - 1];
+				glm::vec3 normal = temp_normals[normIndex - 1];
 
 				out_vertices.push_back(position.x);
 				out_vertices.push_back(position.y);
 				out_vertices.push_back(position.z);
 				out_vertices.push_back(texCoord.x);
 				out_vertices.push_back(texCoord.y);
+				out_vertices.push_back(normal.x);
+				out_vertices.push_back(normal.y);
+				out_vertices.push_back(normal.z);
 
 
             }

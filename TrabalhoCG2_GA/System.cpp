@@ -194,6 +194,12 @@ void System::Run()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
 
 		coreShader.Use();
+		glUniform3f(glGetUniformLocation(coreShader.ID, "lightPos"), 0.0f, 5.0f, 0.0f);
+		glUniform3f(glGetUniformLocation(coreShader.ID, "lightColor"), 1.0f, 1.0f, 1.0f);
+
+		glUniform3f(glGetUniformLocation(coreShader.ID, "viewPos"), camera.Position.x, camera.Position.y, camera.Position.z);
+
+		glUniform3f(glGetUniformLocation(coreShader.ID, "objectColor"), 1.0f, 0.5f, 0.31f);
 		//coreShader.UseTexture("woodTexture");
 
 		// Onde o objeto está no mundo? (Matriz Model)
