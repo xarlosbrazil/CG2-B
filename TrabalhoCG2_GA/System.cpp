@@ -49,6 +49,10 @@ int System::GLFWInit()
 
 	glewExperimental = GL_TRUE;
 
+	glfwSetWindowUserPointer(window, this); // Seta o ponteiro para a instância atual de System
+
+	glfwSetMouseButtonCallback(window, MouseCallback); // Configura o callback de mouse
+
 	if (glewInit() != GLEW_OK) {
 		std::cout << "Failed no init GLEW." << std::endl;
 		return EXIT_FAILURE;
@@ -312,4 +316,97 @@ void System::Finish()
 	this->meshes.clear();
 
 	glfwTerminate();
+}
+
+void System::MouseCallback(GLFWwindow* window, int button, int action, int mods)
+{
+	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+
+	{
+
+		System* sistema = (System*)glfwGetWindowUserPointer(window); // 1. Pegar o ponteiro para a instância atual de System
+
+		double x, y;
+		glfwGetCursorPos(window, &x, &y); // 2. Pegar a posição do clique
+
+		sistema->adicionarPontoDeControle(x, y);
+	}
+}
+
+void System::adicionarPontoDeControle(double xpos, double ypos)
+{
+	// Por enquanto, vamos apenas guardar o dado bruto (pixel da tela)
+	// O Z fica em 0.0f pois estamos clicando numa tela 2D.
+	this->pontosDeControle.push_back(glm::vec3(xpos, ypos, 0.0f));
+
+	// Print para confirmarmos que funcionou
+	std::cout << "Clique capturado! X: " << xpos << " | Y: " << ypos << std::endl;
+	std::cout << "Total de pontos: " << this->pontosDeControle.size() << std::endl;
+}
+
+// System.cpp (Adicionar no final)
+
+void System::calcularBSpline()
+{
+
+	this->pontosDaCurva.clear();
+
+	if (this->pontosDeControle.size() < 4) return;
+
+	for (size_t i = 0; i < this->pontosDeControle.size() - 3; ++i)
+	{
+		// Identificamos os 4 atores da cena atual para ficar legível
+		glm::vec3 p0 = pontosDeControle[i];     // Ponto i
+		glm::vec3 p1 = pontosDeControle[i + 1]; // Ponto i+1
+		glm::vec3 p2 = pontosDeControle[i + 2]; // Ponto i+2
+		glm::vec3 p3 = pontosDeControle[i + 3]; // Ponto i+3
+
+		for (float t = 0.0f; t < 1.0f; t += 0.05f) // 4. Parâmetro 't' varia de 0 a 1 para cada segmento
+		{
+			float t2 = t * t;  // t^2
+			float t3 = t * t * t; // t^3
+
+
+			float b0 = (-t3 + 3 * t2 - 3 * t + 1.0f) / 6.0f; // Influência do Ponto 0 (Cai no fim): -t^3 + 3t^2 - 3t + 1
+
+			float b1 = (3.0f * t3 - 6.0f * t2 + 4.0f) / 6.0f; // Influência do Ponto 1 (O presente): 3t^3 - 6t^2 + 4
+
+			float b2 = (-3.0f * t3 + 3.0f * t2 + 3.0f * t + 1.0f) / 6.0f; // Influência do Ponto 2 (O passado): -3t^3 + 3t^2 + 3t + 1
+
+			float b3 = t3 / 6.0f; // Influência do Ponto 3 (Cai no começo): t^3
+
+			float x = b0 * p0.x + b1 * p1.x + b2 * p2.x + b3 * p3.x;
+			float y = b0 * p0.y + b1 * p1.y + b2 * p2.y + b3 * p3.y;
+			float z = b0 * p0.z + b1 * p1.z + b2 * p2.z + b3 * p3.z;
+
+			this->pontosDaCurva.push_back(glm::vec3(x, y, z));
+		}
+	}
+}
+
+void System::setupCurva()
+{
+	// Criação dos buffers OpenGL para a curva B-Spline
+
+	glGenVertexArrays(1, &this->curvaVAO);
+	glGenBuffers(1, &this->curvaVBO);
+	glBindVertexArray(this->curvaVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, this->curvaVBO);
+	glBufferData(GL_ARRAY_BUFFER, 0, NULL, GL_DYNAMIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
+}
+
+void System::updateCurveBuffers()
+{
+
+	if (this->pontosDaCurva.empty()) return; // Nada a atualizar
+
+	glBindBuffer(GL_ARRAY_BUFFER, this->curvaVBO);
+	glBufferData(GL_ARRAY_BUFFER, this->pontosDaCurva.size() * sizeof(glm::vec3), this->pontosDaCurva.data(), GL_DYNAMIC_DRAW);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
