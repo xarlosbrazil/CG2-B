@@ -1,7 +1,6 @@
 #include "System.h"
 #include "loadObj.h"
 #include "Camera.h"
-#include "Bullet.h"
 #include "Mesh.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -12,8 +11,6 @@ Camera camera(glm::vec3(0.0f, 0.0f, 10.0f)); // Start the camera at (0,0,10) loo
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 float cooldown = 0.8f;
-
-std::vector<Bullet> bullets; // Vector to hold active bullets
 
 System::System()
 {
@@ -91,8 +88,6 @@ int System::SystemSetup()
 	coreShader.LoadTexture((char*)"Textures/wood.jpg", (char*)"texture1", "woodTexture");
 	coreShader.UseTexture("woodTexture");
 
-	setupBullet();
-
 	std::vector<float> teapotVertices;
 	if (loadObj("teapot.obj", teapotVertices) && !teapotVertices.empty())
 	{
@@ -118,30 +113,6 @@ int System::SystemSetup()
 	return EXIT_SUCCESS;
 }
 
-void System::setupBullet()
-{
-	// Vértices de um cubo pequeno
-	float vertices[] = { 
-		-0.05f,-0.05f,-0.05f, 0.05f,-0.05f,-0.05f, 0.05f, 0.05f,-0.05f, 0.05f, 0.05f,-0.05f,-0.05f, 0.05f,-0.05f,-0.05f,-0.05f,-0.05f,
-		-0.05f,-0.05f, 0.05f, 0.05f,-0.05f, 0.05f, 0.05f, 0.05f, 0.05f, 0.05f, 0.05f, 0.05f,-0.05f, 0.05f, 0.05f,-0.05f,-0.05f, 0.05f,
-		-0.05f, 0.05f, 0.05f,-0.05f, 0.05f,-0.05f,-0.05f,-0.05f,-0.05f,-0.05f,-0.05f,-0.05f,-0.05f,-0.05f, 0.05f,-0.05f, 0.05f, 0.05f,
-		0.05f, 0.05f, 0.05f, 0.05f, 0.05f,-0.05f, 0.05f,-0.05f,-0.05f, 0.05f,-0.05f,-0.05f, 0.05f,-0.05f, 0.05f, 0.05f, 0.05f, 0.05f,
-		-0.05f,-0.05f,-0.05f, 0.05f,-0.05f,-0.05f, 0.05f,-0.05f, 0.05f, 0.05f,-0.05f, 0.05f,-0.05f,-0.05f, 0.05f,-0.05f,-0.05f,-0.05f,
-		-0.05f, 0.05f,-0.05f, 0.05f, 0.05f,-0.05f, 0.05f, 0.05f, 0.05f, 0.05f, 0.05f, 0.05f,-0.05f, 0.05f, 0.05f,-0.05f, 0.05f,-0.05f
-	};
-
-	// Setup do tiro
-	GLuint VBO;
-	glGenVertexArrays(1, &this->bulletVAO);
-	glGenBuffers(1, &VBO);
-	glBindVertexArray(this->bulletVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-	glBindVertexArray(0);
-}
-
 void processInput(GLFWwindow* window, float deltaTime)
 
 {
@@ -156,27 +127,6 @@ void processInput(GLFWwindow* window, float deltaTime)
 		camera.ProcessKeyboard('L', deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		camera.ProcessKeyboard('R', deltaTime);
-
-	static float lastShotTime = 0.0f;
-	
-
-	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && (glfwGetTime() - lastShotTime) > cooldown)
-
-	{
-
-		Bullet newBullet(camera.Position, camera.Front); // Cria uma nova bala na posição da câmera
-		bullets.push_back(newBullet);
-		lastShotTime = glfwGetTime();
-	}
-}
-
-bool checkCollision(const AABB& box, const glm::vec3& point)
-{
-	// O ponto está colidindo se, E SOMENTE SE, sua posição
-	// estiver entre os limites min e max da caixa em TODOS os três eixos (X, Y e Z).
-	return (point.x >= box.min.x && point.x <= box.max.x
-		&& point.y >= box.min.y && point.y <= box.max.y
-		&& point.z >= box.min.z && point.z <= box.max.z);
 }
 
 void System::Run()
@@ -216,86 +166,6 @@ void System::Run()
 
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
-
-		for (auto& object : this->sceneObjects)
-		{
-			if (object.active)
-
-			{
-				// Animação opcional: rotacionar os objetos
-				object.transform = glm::rotate(object.transform, glm::radians(2.0f) * deltaTime * 50.f, glm::vec3(0.2f, 1.0f, 0.0f));
-
-				// Manda cada objeto se desenhar
-				object.draw(coreShader);
-			}
-		}
-
-
-		glBindVertexArray(bulletVAO); // Ativa o "molde" de desenho da bala
-
-		for (auto& bullet : bullets)
-		{
-			// Manda a bala se atualizar (posição e tempo de vida)
-			bullet.update(deltaTime);
-
-			// Se a bala ainda estiver ativa, desenhe-a
-			if (bullet.active)
-			{
-
-				for (auto& object : sceneObjects) // Verifica colisão com todos os objetos da cena
-				{
-					if (object.active)
-					{
-						AABB objectbox = object.getAABB();
-
-						if (checkCollision(objectbox, bullet.position))
-						{
-							
-							if (object.isEliminable && bullet.checkingCollision)
-
-							{
-								std::cout << "Object eliminated!" << std::endl;
-
-								object.active = false; // Marca o objeto para remoção
-								bullet.active = false; // Desativa a bala
-							}
-
-							else
-							{
-								if (bullet.checkingCollision)
-								{
-									std::cout << "Object hit but not eliminable!" << std::endl;
-
-									bullet.direction = -bullet.direction;
-									bullet.position += bullet.direction * 0.1f;
-
-									bullet.checkingCollision = false; // Evita múltiplas colisões
-								}
-							}
-							
-							break;
-						}
-					}
-				}
-
-				// Cria uma matriz 'model' específica para a posição DESTA bala
-				glm::mat4 bulletModel = glm::mat4(1.0f);
-				bulletModel = glm::translate(bulletModel, bullet.position);
-
-				// Envia esta matriz para o shader (reutilizando a modelLoc)
-				glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(bulletModel));
-
-				// Desenha o cubo da bala
-				glDrawArrays(GL_TRIANGLES, 0, 36);
-			}
-		}
-		glBindVertexArray(0);
-
-		bullets.erase(
-			std::remove_if(bullets.begin(), bullets.end(), [](const Bullet& b) { return !b.active; }),
-			bullets.end()
-		);
-
 
 		glfwSwapBuffers(window); // Shows what was drawn in this frame
 	}
@@ -405,6 +275,7 @@ void System::updateCurveBuffers()
 
 	if (this->pontosDaCurva.empty()) return; // Nada a atualizar
 
+	// Atualiza os dados do VBO com os novos pontos da curva
 	glBindBuffer(GL_ARRAY_BUFFER, this->curvaVBO);
 	glBufferData(GL_ARRAY_BUFFER, this->pontosDaCurva.size() * sizeof(glm::vec3), this->pontosDaCurva.data(), GL_DYNAMIC_DRAW);
 
