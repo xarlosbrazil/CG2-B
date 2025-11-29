@@ -36,8 +36,6 @@ private:
 	// Screen
 	const GLint WIDTH = 600, HEIGHT = 600;
 	int screenWidth, screenHeight;
-	GLuint bulletVAO;
-	void setupBullet();
 	std::vector<GameObject> sceneObjects; // vetor para guardar os objetos da cena
 	std::vector<Mesh*> meshes; // vetor para guardar os meshes criados e limpar a memória depois
 
@@ -46,10 +44,16 @@ private:
 	std::vector<glm::vec3> pontosDeControle; // Onde guardamos os cliques (P0, P1, P2...)
 	std::vector<glm::vec3> pontosDaCurva; // Onde guardamos os pontos calculados da curva B-Spline
 	GLuint curvaVAO, curvaVBO;
+	std::vector<glm::vec3> pistaInterna;
+	std::vector<glm::vec3> pistaExterna;
+	std::vector<float> malhaPistaVertices; // Usamos float puro para facilitar o formato do OBJ depois
+
+
 
 public:
 	GLFWwindow* window;
 	Shader coreShader;
+	Shader lineShader;
 
 public:
 	System();
@@ -70,6 +74,14 @@ public:
 
 	void setupCurva();
 	void updateCurveBuffers();
+
+	void gerarMalhaPista();
+	void gerarTriangulosPista();
+
+	void salvarOBJ(const char* filename); // Exporta a malha
+	void salvarAnimacao(const char* filename); // Exporta o caminho do carro
+
+	void salvarCena(const char* filename);
 
 	void Finish();
 

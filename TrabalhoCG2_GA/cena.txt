@@ -1,0 +1,4 @@
+pista.obj
+animacao.txt
+carro.obj
+Textures/road.jpg

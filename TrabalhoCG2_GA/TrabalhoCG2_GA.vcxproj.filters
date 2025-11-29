@@ -19,6 +19,9 @@
     <Filter Include="Shaders\Core">
       <UniqueIdentifier>{a385c29a-17a6-49db-8114-65941d6252aa}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\Line">
+      <UniqueIdentifier>{c534d031-7dca-4868-ba47-4a3d59bcac5d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -84,6 +87,12 @@
     </None>
     <None Include="Shaders\Core\core.vert">
       <Filter>Shaders\Core</Filter>
+    </None>
+    <None Include="line.vert">
+      <Filter>Shaders\Line</Filter>
+    </None>
+    <None Include="line.frag">
+      <Filter>Shaders\Line</Filter>
     </None>
   </ItemGroup>
 </Project>
